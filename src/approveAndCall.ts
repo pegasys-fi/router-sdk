@@ -1,17 +1,17 @@
 import { Interface } from '@ethersproject/abi'
 import invariant from 'tiny-invariant'
-import { abi } from '@uniswap/swap-router-contracts/artifacts/contracts/interfaces/IApproveAndCall.sol/IApproveAndCall.json'
-import { Currency, Percent, Token } from '@uniswap/sdk-core'
+import { abi } from '@pollum-io/swap-router-contracts/artifacts/contracts/interfaces/IApproveAndCall.sol/IApproveAndCall.json'
+import { Currency, Percent, Token } from '@pollum-io/sdk-core'
 import {
   MintSpecificOptions,
   IncreaseSpecificOptions,
   NonfungiblePositionManager,
   Position,
   toHex,
-} from '@uniswap/v3-sdk'
+} from '@pollum-io/v2-sdk'
 import JSBI from 'jsbi'
 
-// condensed version of v3-sdk AddLiquidityOptions containing only necessary swap + add attributes
+// condensed version of v2-sdk AddLiquidityOptions containing only necessary swap + add attributes
 export type CondensedAddLiquidityOptions = Omit<MintSpecificOptions, 'createPool'> | IncreaseSpecificOptions
 
 export enum ApprovalTypes {
@@ -33,7 +33,7 @@ export abstract class ApproveAndCall {
   /**
    * Cannot be constructed.
    */
-  private constructor() {}
+  private constructor() { }
 
   public static encodeApproveMax(token: Token): string {
     return ApproveAndCall.INTERFACE.encodeFunctionData('approveMax', [token.address])

@@ -7,4 +7,4 @@ export const ZERO = JSBI.BigInt(0)
 export const ONE = JSBI.BigInt(1)
 
 // = 1 << 23 or 100000000000000000000000
-export const V2_FEE_PATH_PLACEHOLDER = 8388608
+export const V1_FEE_PATH_PLACEHOLDER = 8388608

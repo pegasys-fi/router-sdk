@@ -1,6 +1,6 @@
-import { Percent, Price, sqrt, Token, CurrencyAmount, TradeType, WETH9, Ether, Currency } from '@uniswap/sdk-core'
-import { Pair } from '@uniswap/v2-sdk'
-import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@uniswap/v3-sdk'
+import { Percent, Price, sqrt, Token, CurrencyAmount, TradeType, WETH9, Ether, Currency } from '@pollum-io/sdk-core'
+import { Pair } from '@pollum-io/v1-sdk'
+import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@pollum-io/v2-sdk'
 import JSBI from 'jsbi'
 import { MixedRouteSDK } from './route'
 import { MixedRouteTrade } from './trade'
@@ -12,7 +12,7 @@ describe('MixedRouteTrade', () => {
   const token2 = new Token(1, '0x0000000000000000000000000000000000000003', 18, 't2', 'token2')
   const token3 = new Token(1, '0x0000000000000000000000000000000000000004', 18, 't3', 'token3')
 
-  function v2StylePool(
+  function v1StylePool(
     reserve0: CurrencyAmount<Token>,
     reserve1: CurrencyAmount<Token>,
     feeAmount: FeeAmount = FeeAmount.MEDIUM
@@ -41,38 +41,38 @@ describe('MixedRouteTrade', () => {
     )
   }
 
-  const pool_0_1 = v2StylePool(
+  const pool_0_1 = v1StylePool(
     CurrencyAmount.fromRawAmount(token0, 100000),
     CurrencyAmount.fromRawAmount(token1, 100000)
   )
-  const pool_0_2 = v2StylePool(
+  const pool_0_2 = v1StylePool(
     CurrencyAmount.fromRawAmount(token0, 100000),
     CurrencyAmount.fromRawAmount(token2, 110000)
   )
-  const pool_0_3 = v2StylePool(
+  const pool_0_3 = v1StylePool(
     CurrencyAmount.fromRawAmount(token0, 100000),
     CurrencyAmount.fromRawAmount(token3, 90000)
   )
-  const pool_1_2 = v2StylePool(
+  const pool_1_2 = v1StylePool(
     CurrencyAmount.fromRawAmount(token1, 120000),
     CurrencyAmount.fromRawAmount(token2, 100000)
   )
-  const pool_1_3 = v2StylePool(
+  const pool_1_3 = v1StylePool(
     CurrencyAmount.fromRawAmount(token1, 120000),
     CurrencyAmount.fromRawAmount(token3, 130000)
   )
 
-  const pool_weth_0 = v2StylePool(
+  const pool_weth_0 = v1StylePool(
     CurrencyAmount.fromRawAmount(WETH9[1], JSBI.BigInt(100000)),
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(100000))
   )
 
-  const pool_weth_1 = v2StylePool(
+  const pool_weth_1 = v1StylePool(
     CurrencyAmount.fromRawAmount(WETH9[1], JSBI.BigInt(100000)),
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(100000))
   )
 
-  const pool_weth_2 = v2StylePool(
+  const pool_weth_2 = v1StylePool(
     CurrencyAmount.fromRawAmount(WETH9[1], JSBI.BigInt(100000)),
     CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(100000))
   )
@@ -108,8 +108,8 @@ describe('MixedRouteTrade', () => {
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(0))
   )
 
-  /// @dev copied over from v3-sdk trade.test.ts
-  describe('is backwards compatible with pure v3 routes', () => {
+  /// @dev copied over from v2-sdk trade.test.ts
+  describe('is backwards compatible with pure v2 routes', () => {
     describe('#fromRoute', () => {
       it('can be constructed with ETHER as input', async () => {
         const trade = await MixedRouteTrade.fromRoute(
@@ -413,7 +413,7 @@ describe('MixedRouteTrade', () => {
     })
 
     describe('#priceImpact', () => {
-      describe('100% v3 route', () => {
+      describe('100% v2 route', () => {
         describe('tradeType = EXACT_INPUT', () => {
           const exactIn = MixedRouteTrade.createUncheckedTradeWithMultipleRoutes({
             routes: [
@@ -654,11 +654,11 @@ describe('MixedRouteTrade', () => {
         let exactIn: MixedRouteTrade<Token, Token, TradeType.EXACT_INPUT>
         beforeEach(
           async () =>
-            (exactIn = await MixedRouteTrade.fromRoute(
-              new MixedRouteSDK([pool_0_1, pool_1_2], token0, token2),
-              CurrencyAmount.fromRawAmount(token0, 10000),
-              TradeType.EXACT_INPUT
-            ))
+          (exactIn = await MixedRouteTrade.fromRoute(
+            new MixedRouteSDK([pool_0_1, pool_1_2], token0, token2),
+            CurrencyAmount.fromRawAmount(token0, 10000),
+            TradeType.EXACT_INPUT
+          ))
         )
 
         it('throws if less than 0', () => {
@@ -684,8 +684,8 @@ describe('MixedRouteTrade', () => {
     })
   })
 
-  /// @dev copied over from v2-sdk trade.test.ts
-  describe('is backwards compatible with pure v2 routes', () => {
+  /// @dev copied over from v1-sdk trade.test.ts
+  describe('is backwards compatible with pure v1 routes', () => {
     it('can be constructed with ETHER as input', async () => {
       const trade = await MixedRouteTrade.fromRoute(
         new MixedRouteSDK([pair_weth_0], ETHER, token0),
@@ -911,7 +911,7 @@ describe('MixedRouteTrade', () => {
     })
   })
 
-  describe('multihop v2 + v3', () => {
+  describe('multihop v1 + v2', () => {
     describe('#fromRoute', () => {
       it('can be constructed with ETHER as input', async () => {
         const trade = await MixedRouteTrade.fromRoute(
@@ -975,7 +975,7 @@ describe('MixedRouteTrade', () => {
         expect(trade.outputAmount.currency).toEqual(ETHER)
       })
 
-      /// no test for pool duplication because both v3 and v2 tests above cover it
+      /// no test for pool duplication because both v2 and v1 tests above cover it
     })
 
     describe('#createUncheckedTrade', () => {
@@ -1192,7 +1192,7 @@ describe('MixedRouteTrade', () => {
     })
 
     describe('#bestTradeExactIn', () => {
-      /// no empty check because covered by v3 backward compatibility test
+      /// no empty check because covered by v2 backward compatibility test
 
       it('throws with max hops of 0', async () => {
         await expect(
@@ -1266,7 +1266,7 @@ describe('MixedRouteTrade', () => {
         expect(result).toHaveLength(1)
       })
 
-      it('no path between v2 and v3', async () => {
+      it('no path between v1 and v2', async () => {
         const result = await MixedRouteTrade.bestTradeExactIn(
           [pool_0_1, pair_0_3, pool_1_3],
           CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(10)),
@@ -1353,11 +1353,11 @@ describe('MixedRouteTrade', () => {
         )
         beforeEach(
           async () =>
-            (exactIn = await MixedRouteTrade.fromRoute(
-              new MixedRouteSDK([large_pair_0_1, pool_1_2], token0, token2),
-              CurrencyAmount.fromRawAmount(token0, 10000),
-              TradeType.EXACT_INPUT
-            ))
+          (exactIn = await MixedRouteTrade.fromRoute(
+            new MixedRouteSDK([large_pair_0_1, pool_1_2], token0, token2),
+            CurrencyAmount.fromRawAmount(token0, 10000),
+            TradeType.EXACT_INPUT
+          ))
         )
 
         it('throws if less than 0', () => {

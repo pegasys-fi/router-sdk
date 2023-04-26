@@ -1,7 +1,7 @@
 import { Interface } from '@ethersproject/abi'
-import { Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress, WETH9 } from '@uniswap/sdk-core'
-import { abi } from '@uniswap/swap-router-contracts/artifacts/contracts/interfaces/ISwapRouter02.sol/ISwapRouter02.json'
-import { Trade as V2Trade } from '@uniswap/v2-sdk'
+import { Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress, WETH9 } from '@pollum-io/sdk-core'
+import { abi } from '@pollum-io/swap-router-contracts/artifacts/contracts/interfaces/ISwapRouter02.sol/ISwapRouter02.json'
+import { Trade as V1Trade } from '@pollum-io/v1-sdk'
 import {
   encodeRouteToPath,
   FeeOptions,
@@ -12,15 +12,15 @@ import {
   Position,
   SelfPermit,
   toHex,
-  Trade as V3Trade,
-} from '@uniswap/v3-sdk'
+  Trade as V2Trade,
+} from '@pollum-io/v2-sdk'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { ADDRESS_THIS, MSG_SENDER } from './constants'
 import { ApproveAndCall, ApprovalTypes, CondensedAddLiquidityOptions } from './approveAndCall'
 import { Trade } from './entities/trade'
 import { Protocol } from './entities/protocol'
-import { MixedRoute, RouteV2, RouteV3 } from './entities/route'
+import { MixedRoute, RouteV1, RouteV2 } from './entities/route'
 import { MulticallExtended, Validation } from './multicallExtended'
 import { PaymentsExtended } from './paymentsExtended'
 import { MixedRouteTrade } from './entities/mixedRoute/trade'
@@ -70,17 +70,17 @@ export interface SwapAndAddOptions extends SwapOptions {
 
 type AnyTradeType =
   | Trade<Currency, Currency, TradeType>
+  | V1Trade<Currency, Currency, TradeType>
   | V2Trade<Currency, Currency, TradeType>
-  | V3Trade<Currency, Currency, TradeType>
   | MixedRouteTrade<Currency, Currency, TradeType>
   | (
-      | V2Trade<Currency, Currency, TradeType>
-      | V3Trade<Currency, Currency, TradeType>
-      | MixedRouteTrade<Currency, Currency, TradeType>
-    )[]
+    | V1Trade<Currency, Currency, TradeType>
+    | V2Trade<Currency, Currency, TradeType>
+    | MixedRouteTrade<Currency, Currency, TradeType>
+  )[]
 
 /**
- * Represents the Uniswap V2 + V3 SwapRouter02, and has static methods for helping execute trades.
+ * Represents the Pegasys V1 + V2 SwapRouter02, and has static methods for helping execute trades.
  */
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
@@ -88,18 +88,18 @@ export abstract class SwapRouter {
   /**
    * Cannot be constructed.
    */
-  private constructor() {}
+  private constructor() { }
 
   /**
-   * @notice Generates the calldata for a Swap with a V2 Route.
-   * @param trade The V2Trade to encode.
+   * @notice Generates the calldata for a Swap with a V1 Route.
+   * @param trade The V1Trade to encode.
    * @param options SwapOptions to use for the trade.
    * @param routerMustCustody Flag for whether funds should be sent to the router
    * @param performAggregatedSlippageCheck Flag for whether we want to perform an aggregated slippage check
    * @returns A string array of calldatas for the trade.
    */
-  private static encodeV2Swap(
-    trade: V2Trade<Currency, Currency, TradeType>,
+  private static encodeV1Swap(
+    trade: V1Trade<Currency, Currency, TradeType>,
     options: SwapOptions,
     routerMustCustody: boolean,
     performAggregatedSlippageCheck: boolean
@@ -111,8 +111,8 @@ export abstract class SwapRouter {
     const recipient = routerMustCustody
       ? ADDRESS_THIS
       : typeof options.recipient === 'undefined'
-      ? MSG_SENDER
-      : validateAndParseAddress(options.recipient)
+        ? MSG_SENDER
+        : validateAndParseAddress(options.recipient)
 
     if (trade.tradeType === TradeType.EXACT_INPUT) {
       const exactInputParams = [amountIn, performAggregatedSlippageCheck ? 0 : amountOut, path, recipient]
@@ -126,15 +126,15 @@ export abstract class SwapRouter {
   }
 
   /**
-   * @notice Generates the calldata for a Swap with a V3 Route.
-   * @param trade The V3Trade to encode.
+   * @notice Generates the calldata for a Swap with a V2 Route.
+   * @param trade The V2Trade to encode.
    * @param options SwapOptions to use for the trade.
    * @param routerMustCustody Flag for whether funds should be sent to the router
    * @param performAggregatedSlippageCheck Flag for whether we want to perform an aggregated slippage check
    * @returns A string array of calldatas for the trade.
    */
-  private static encodeV3Swap(
-    trade: V3Trade<Currency, Currency, TradeType>,
+  private static encodeV2Swap(
+    trade: V2Trade<Currency, Currency, TradeType>,
     options: SwapOptions,
     routerMustCustody: boolean,
     performAggregatedSlippageCheck: boolean
@@ -151,8 +151,8 @@ export abstract class SwapRouter {
       const recipient = routerMustCustody
         ? ADDRESS_THIS
         : typeof options.recipient === 'undefined'
-        ? MSG_SENDER
-        : validateAndParseAddress(options.recipient)
+          ? MSG_SENDER
+          : validateAndParseAddress(options.recipient)
 
       if (singleHop) {
         if (trade.tradeType === TradeType.EXACT_INPUT) {
@@ -210,7 +210,7 @@ export abstract class SwapRouter {
 
   /**
    * @notice Generates the calldata for a MixedRouteSwap. Since single hop routes are not MixedRoutes, we will instead generate
-   *         them via the existing encodeV3Swap and encodeV2Swap methods.
+   *         them via the existing encodeV2Swap and encodeV1Swap methods.
    * @param trade The MixedRouteTrade to encode.
    * @param options SwapOptions to use for the trade.
    * @param routerMustCustody Flag for whether funds should be sent to the router
@@ -237,17 +237,17 @@ export abstract class SwapRouter {
       const recipient = routerMustCustody
         ? ADDRESS_THIS
         : typeof options.recipient === 'undefined'
-        ? MSG_SENDER
-        : validateAndParseAddress(options.recipient)
+          ? MSG_SENDER
+          : validateAndParseAddress(options.recipient)
 
-      const mixedRouteIsAllV3 = (route: MixedRouteSDK<Currency, Currency>) => {
+      const mixedRouteIsAllV2 = (route: MixedRouteSDK<Currency, Currency>) => {
         return route.pools.every((pool) => pool instanceof Pool)
       }
 
       if (singleHop) {
-        /// For single hop, since it isn't really a mixedRoute, we'll just mimic behavior of V3 or V2
-        /// We don't use encodeV3Swap() or encodeV2Swap() because casting the trade to a V3Trade or V2Trade is overcomplex
-        if (mixedRouteIsAllV3(route)) {
+        /// For single hop, since it isn't really a mixedRoute, we'll just mimic behavior of V2 or V1
+        /// We don't use encodeV2Swap() or encodeV1Swap() because casting the trade to a V2Trade or V1Trade is overcomplex
+        if (mixedRouteIsAllV2(route)) {
           const exactInputSingleParams = {
             tokenIn: route.path[0].address,
             tokenOut: route.path[1].address,
@@ -291,7 +291,7 @@ export abstract class SwapRouter {
           /// Previous output is now input
           inputToken = outputToken
 
-          if (mixedRouteIsAllV3(newRoute)) {
+          if (mixedRouteIsAllV2(newRoute)) {
             const path: string = encodeMixedRouteToPath(newRoute)
             const exactInputParams = {
               path,
@@ -328,9 +328,9 @@ export abstract class SwapRouter {
   ): {
     calldatas: string[]
     sampleTrade:
-      | V2Trade<Currency, Currency, TradeType>
-      | V3Trade<Currency, Currency, TradeType>
-      | MixedRouteTrade<Currency, Currency, TradeType>
+    | V1Trade<Currency, Currency, TradeType>
+    | V2Trade<Currency, Currency, TradeType>
+    | MixedRouteTrade<Currency, Currency, TradeType>
     routerMustCustody: boolean
     inputIsNative: boolean
     outputIsNative: boolean
@@ -343,32 +343,32 @@ export abstract class SwapRouter {
       invariant(
         trades.swaps.every(
           (swap) =>
-            swap.route.protocol == Protocol.V3 ||
             swap.route.protocol == Protocol.V2 ||
+            swap.route.protocol == Protocol.V1 ||
             swap.route.protocol == Protocol.MIXED
         ),
         'UNSUPPORTED_PROTOCOL'
       )
 
       let individualTrades: (
+        | V1Trade<Currency, Currency, TradeType>
         | V2Trade<Currency, Currency, TradeType>
-        | V3Trade<Currency, Currency, TradeType>
         | MixedRouteTrade<Currency, Currency, TradeType>
       )[] = []
 
       for (const { route, inputAmount, outputAmount } of trades.swaps) {
-        if (route.protocol == Protocol.V2) {
+        if (route.protocol == Protocol.V1) {
           individualTrades.push(
-            new V2Trade(
-              route as RouteV2<Currency, Currency>,
+            new V1Trade(
+              route as RouteV1<Currency, Currency>,
               trades.tradeType == TradeType.EXACT_INPUT ? inputAmount : outputAmount,
               trades.tradeType
             )
           )
-        } else if (route.protocol == Protocol.V3) {
+        } else if (route.protocol == Protocol.V2) {
           individualTrades.push(
-            V3Trade.createUncheckedTrade({
-              route: route as RouteV3<Currency, Currency>,
+            V2Trade.createUncheckedTrade({
+              route: route as RouteV2<Currency, Currency>,
               inputAmount,
               outputAmount,
               tradeType: trades.tradeType,
@@ -397,7 +397,7 @@ export abstract class SwapRouter {
 
     const numberOfTrades = trades.reduce(
       (numberOfTrades, trade) =>
-        numberOfTrades + (trade instanceof V3Trade || trade instanceof MixedRouteTrade ? trade.swaps.length : 1),
+        numberOfTrades + (trade instanceof V2Trade || trade instanceof MixedRouteTrade ? trade.swaps.length : 1),
       0
     )
 
@@ -441,10 +441,10 @@ export abstract class SwapRouter {
     }
 
     for (const trade of trades) {
-      if (trade instanceof V2Trade) {
-        calldatas.push(SwapRouter.encodeV2Swap(trade, options, routerMustCustody, performAggregatedSlippageCheck))
-      } else if (trade instanceof V3Trade) {
-        for (const calldata of SwapRouter.encodeV3Swap(
+      if (trade instanceof V1Trade) {
+        calldatas.push(SwapRouter.encodeV1Swap(trade, options, routerMustCustody, performAggregatedSlippageCheck))
+      } else if (trade instanceof V2Trade) {
+        for (const calldata of SwapRouter.encodeV2Swap(
           trade,
           options,
           routerMustCustody,
@@ -504,14 +504,14 @@ export abstract class SwapRouter {
   public static swapCallParameters(
     trades:
       | Trade<Currency, Currency, TradeType>
+      | V1Trade<Currency, Currency, TradeType>
       | V2Trade<Currency, Currency, TradeType>
-      | V3Trade<Currency, Currency, TradeType>
       | MixedRouteTrade<Currency, Currency, TradeType>
       | (
-          | V2Trade<Currency, Currency, TradeType>
-          | V3Trade<Currency, Currency, TradeType>
-          | MixedRouteTrade<Currency, Currency, TradeType>
-        )[],
+        | V1Trade<Currency, Currency, TradeType>
+        | V2Trade<Currency, Currency, TradeType>
+        | MixedRouteTrade<Currency, Currency, TradeType>
+      )[],
     options: SwapOptions
   ): MethodParameters {
     const {
@@ -653,21 +653,21 @@ export abstract class SwapRouter {
   private static riskOfPartialFill(trades: AnyTradeType): boolean {
     if (Array.isArray(trades)) {
       return trades.some((trade) => {
-        return SwapRouter.v3TradeWithHighPriceImpact(trade)
+        return SwapRouter.v2TradeWithHighPriceImpact(trade)
       })
     } else {
-      return SwapRouter.v3TradeWithHighPriceImpact(trades)
+      return SwapRouter.v2TradeWithHighPriceImpact(trades)
     }
   }
 
-  private static v3TradeWithHighPriceImpact(
+  private static v2TradeWithHighPriceImpact(
     trade:
       | Trade<Currency, Currency, TradeType>
+      | V1Trade<Currency, Currency, TradeType>
       | V2Trade<Currency, Currency, TradeType>
-      | V3Trade<Currency, Currency, TradeType>
       | MixedRouteTrade<Currency, Currency, TradeType>
   ): boolean {
-    return !(trade instanceof V2Trade) && trade.priceImpact.greaterThan(REFUND_ETH_PRICE_IMPACT_THRESHOLD)
+    return !(trade instanceof V1Trade) && trade.priceImpact.greaterThan(REFUND_ETH_PRICE_IMPACT_THRESHOLD)
   }
 
   private static getPositionAmounts(

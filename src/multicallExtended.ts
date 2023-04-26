@@ -1,7 +1,7 @@
 import { Interface } from '@ethersproject/abi'
-import { BigintIsh } from '@uniswap/sdk-core'
-import { abi } from '@uniswap/swap-router-contracts/artifacts/contracts/interfaces/IMulticallExtended.sol/IMulticallExtended.json'
-import { Multicall, toHex } from '@uniswap/v3-sdk'
+import { BigintIsh } from '@pollum-io/sdk-core'
+import { abi } from '@pollum-io/swap-router-contracts/artifacts/contracts/interfaces/IMulticallExtended.sol/IMulticallExtended.json'
+import { Multicall, toHex } from '@pollum-io/v2-sdk'
 
 // deadline or previousBlockhash
 export type Validation = BigintIsh | string
@@ -20,7 +20,7 @@ export abstract class MulticallExtended {
   /**
    * Cannot be constructed.
    */
-  private constructor() {}
+  private constructor() { }
 
   public static encodeMulticall(calldatas: string | string[], validation?: Validation): string {
     // if there's no validation, we can just fall back to regular multicall
