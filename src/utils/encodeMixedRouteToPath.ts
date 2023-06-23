@@ -1,6 +1,6 @@
 import { pack } from '@ethersproject/solidity'
 import { Currency, Token } from '@pollum-io/sdk-core'
-import { Pool } from '@pollum-io/v2-sdk'
+import { Pool } from '@pollum-io/v3-sdk'
 import { Pair } from '@pollum-io/v1-sdk'
 import { MixedRouteSDK } from '../entities/mixedRoute/route'
 import { V1_FEE_PATH_PLACEHOLDER } from '../constants'

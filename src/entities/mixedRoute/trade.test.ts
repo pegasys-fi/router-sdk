@@ -1,6 +1,6 @@
 import { Percent, Price, sqrt, Token, CurrencyAmount, TradeType, WETH9, Ether, Currency } from '@pollum-io/sdk-core'
 import { Pair } from '@pollum-io/v1-sdk'
-import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@pollum-io/v2-sdk'
+import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@pollum-io/v3-sdk'
 import JSBI from 'jsbi'
 import { MixedRouteSDK } from './route'
 import { MixedRouteTrade } from './trade'
@@ -108,8 +108,8 @@ describe('MixedRouteTrade', () => {
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(0))
   )
 
-  /// @dev copied over from v2-sdk trade.test.ts
-  describe('is backwards compatible with pure v2 routes', () => {
+  /// @dev copied over from v3-sdk trade.test.ts
+  describe('is backwards compatible with pure v3 routes', () => {
     describe('#fromRoute', () => {
       it('can be constructed with ETHER as input', async () => {
         const trade = await MixedRouteTrade.fromRoute(
@@ -413,7 +413,7 @@ describe('MixedRouteTrade', () => {
     })
 
     describe('#priceImpact', () => {
-      describe('100% v2 route', () => {
+      describe('100% v3 route', () => {
         describe('tradeType = EXACT_INPUT', () => {
           const exactIn = MixedRouteTrade.createUncheckedTradeWithMultipleRoutes({
             routes: [
@@ -911,7 +911,7 @@ describe('MixedRouteTrade', () => {
     })
   })
 
-  describe('multihop v1 + v2', () => {
+  describe('multihop v1 + v3', () => {
     describe('#fromRoute', () => {
       it('can be constructed with ETHER as input', async () => {
         const trade = await MixedRouteTrade.fromRoute(
@@ -975,7 +975,7 @@ describe('MixedRouteTrade', () => {
         expect(trade.outputAmount.currency).toEqual(ETHER)
       })
 
-      /// no test for pool duplication because both v2 and v1 tests above cover it
+      /// no test for pool duplication because both v3 and v1 tests above cover it
     })
 
     describe('#createUncheckedTrade', () => {
@@ -1192,7 +1192,7 @@ describe('MixedRouteTrade', () => {
     })
 
     describe('#bestTradeExactIn', () => {
-      /// no empty check because covered by v2 backward compatibility test
+      /// no empty check because covered by v3 backward compatibility test
 
       it('throws with max hops of 0', async () => {
         await expect(
@@ -1266,7 +1266,7 @@ describe('MixedRouteTrade', () => {
         expect(result).toHaveLength(1)
       })
 
-      it('no path between v1 and v2', async () => {
+      it('no path between v1 and v3', async () => {
         const result = await MixedRouteTrade.bestTradeExactIn(
           [pool_0_1, pair_0_3, pool_1_3],
           CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(10)),

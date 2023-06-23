@@ -12,15 +12,15 @@ import {
   Position,
   SelfPermit,
   toHex,
-  Trade as V2Trade,
-} from '@pollum-io/v2-sdk'
+  Trade as V3Trade,
+} from '@pollum-io/v3-sdk'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { ADDRESS_THIS, MSG_SENDER } from './constants'
 import { ApproveAndCall, ApprovalTypes, CondensedAddLiquidityOptions } from './approveAndCall'
 import { Trade } from './entities/trade'
 import { Protocol } from './entities/protocol'
-import { MixedRoute, RouteV1, RouteV2 } from './entities/route'
+import { MixedRoute, RouteV1, RouteV3 } from './entities/route'
 import { MulticallExtended, Validation } from './multicallExtended'
 import { PaymentsExtended } from './paymentsExtended'
 import { MixedRouteTrade } from './entities/mixedRoute/trade'
@@ -71,16 +71,16 @@ export interface SwapAndAddOptions extends SwapOptions {
 type AnyTradeType =
   | Trade<Currency, Currency, TradeType>
   | V1Trade<Currency, Currency, TradeType>
-  | V2Trade<Currency, Currency, TradeType>
+  | V3Trade<Currency, Currency, TradeType>
   | MixedRouteTrade<Currency, Currency, TradeType>
   | (
     | V1Trade<Currency, Currency, TradeType>
-    | V2Trade<Currency, Currency, TradeType>
+    | V3Trade<Currency, Currency, TradeType>
     | MixedRouteTrade<Currency, Currency, TradeType>
   )[]
 
 /**
- * Represents the Pegasys V1 + V2 SwapRouter02, and has static methods for helping execute trades.
+ * Represents the Pegasys V1 + V3 SwapRouter02, and has static methods for helping execute trades.
  */
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
@@ -126,15 +126,15 @@ export abstract class SwapRouter {
   }
 
   /**
-   * @notice Generates the calldata for a Swap with a V2 Route.
-   * @param trade The V2Trade to encode.
+   * @notice Generates the calldata for a Swap with a V3 Route.
+   * @param trade The V3Trade to encode.
    * @param options SwapOptions to use for the trade.
    * @param routerMustCustody Flag for whether funds should be sent to the router
    * @param performAggregatedSlippageCheck Flag for whether we want to perform an aggregated slippage check
    * @returns A string array of calldatas for the trade.
    */
-  private static encodeV2Swap(
-    trade: V2Trade<Currency, Currency, TradeType>,
+  private static encodeV3Swap(
+    trade: V3Trade<Currency, Currency, TradeType>,
     options: SwapOptions,
     routerMustCustody: boolean,
     performAggregatedSlippageCheck: boolean
@@ -210,7 +210,7 @@ export abstract class SwapRouter {
 
   /**
    * @notice Generates the calldata for a MixedRouteSwap. Since single hop routes are not MixedRoutes, we will instead generate
-   *         them via the existing encodeV2Swap and encodeV1Swap methods.
+   *         them via the existing encodeV3Swap and encodeV1Swap methods.
    * @param trade The MixedRouteTrade to encode.
    * @param options SwapOptions to use for the trade.
    * @param routerMustCustody Flag for whether funds should be sent to the router
@@ -240,14 +240,14 @@ export abstract class SwapRouter {
           ? MSG_SENDER
           : validateAndParseAddress(options.recipient)
 
-      const mixedRouteIsAllV2 = (route: MixedRouteSDK<Currency, Currency>) => {
+      const mixedRouteIsAllV3 = (route: MixedRouteSDK<Currency, Currency>) => {
         return route.pools.every((pool) => pool instanceof Pool)
       }
 
       if (singleHop) {
-        /// For single hop, since it isn't really a mixedRoute, we'll just mimic behavior of V2 or V1
-        /// We don't use encodeV2Swap() or encodeV1Swap() because casting the trade to a V2Trade or V1Trade is overcomplex
-        if (mixedRouteIsAllV2(route)) {
+        /// For single hop, since it isn't really a mixedRoute, we'll just mimic behavior of V3 or V1
+        /// We don't use encodeV3Swap() or encodeV1Swap() because casting the trade to a V3Trade or V1Trade is overcomplex
+        if (mixedRouteIsAllV3(route)) {
           const exactInputSingleParams = {
             tokenIn: route.path[0].address,
             tokenOut: route.path[1].address,
@@ -291,7 +291,7 @@ export abstract class SwapRouter {
           /// Previous output is now input
           inputToken = outputToken
 
-          if (mixedRouteIsAllV2(newRoute)) {
+          if (mixedRouteIsAllV3(newRoute)) {
             const path: string = encodeMixedRouteToPath(newRoute)
             const exactInputParams = {
               path,
@@ -329,7 +329,7 @@ export abstract class SwapRouter {
     calldatas: string[]
     sampleTrade:
     | V1Trade<Currency, Currency, TradeType>
-    | V2Trade<Currency, Currency, TradeType>
+    | V3Trade<Currency, Currency, TradeType>
     | MixedRouteTrade<Currency, Currency, TradeType>
     routerMustCustody: boolean
     inputIsNative: boolean
@@ -343,7 +343,7 @@ export abstract class SwapRouter {
       invariant(
         trades.swaps.every(
           (swap) =>
-            swap.route.protocol == Protocol.V2 ||
+            swap.route.protocol == Protocol.V3 ||
             swap.route.protocol == Protocol.V1 ||
             swap.route.protocol == Protocol.MIXED
         ),
@@ -352,7 +352,7 @@ export abstract class SwapRouter {
 
       let individualTrades: (
         | V1Trade<Currency, Currency, TradeType>
-        | V2Trade<Currency, Currency, TradeType>
+        | V3Trade<Currency, Currency, TradeType>
         | MixedRouteTrade<Currency, Currency, TradeType>
       )[] = []
 
@@ -365,10 +365,10 @@ export abstract class SwapRouter {
               trades.tradeType
             )
           )
-        } else if (route.protocol == Protocol.V2) {
+        } else if (route.protocol == Protocol.V3) {
           individualTrades.push(
-            V2Trade.createUncheckedTrade({
-              route: route as RouteV2<Currency, Currency>,
+            V3Trade.createUncheckedTrade({
+              route: route as RouteV3<Currency, Currency>,
               inputAmount,
               outputAmount,
               tradeType: trades.tradeType,
@@ -397,7 +397,7 @@ export abstract class SwapRouter {
 
     const numberOfTrades = trades.reduce(
       (numberOfTrades, trade) =>
-        numberOfTrades + (trade instanceof V2Trade || trade instanceof MixedRouteTrade ? trade.swaps.length : 1),
+        numberOfTrades + (trade instanceof V3Trade || trade instanceof MixedRouteTrade ? trade.swaps.length : 1),
       0
     )
 
@@ -443,8 +443,8 @@ export abstract class SwapRouter {
     for (const trade of trades) {
       if (trade instanceof V1Trade) {
         calldatas.push(SwapRouter.encodeV1Swap(trade, options, routerMustCustody, performAggregatedSlippageCheck))
-      } else if (trade instanceof V2Trade) {
-        for (const calldata of SwapRouter.encodeV2Swap(
+      } else if (trade instanceof V3Trade) {
+        for (const calldata of SwapRouter.encodeV3Swap(
           trade,
           options,
           routerMustCustody,
@@ -505,11 +505,11 @@ export abstract class SwapRouter {
     trades:
       | Trade<Currency, Currency, TradeType>
       | V1Trade<Currency, Currency, TradeType>
-      | V2Trade<Currency, Currency, TradeType>
+      | V3Trade<Currency, Currency, TradeType>
       | MixedRouteTrade<Currency, Currency, TradeType>
       | (
         | V1Trade<Currency, Currency, TradeType>
-        | V2Trade<Currency, Currency, TradeType>
+        | V3Trade<Currency, Currency, TradeType>
         | MixedRouteTrade<Currency, Currency, TradeType>
       )[],
     options: SwapOptions
@@ -653,18 +653,18 @@ export abstract class SwapRouter {
   private static riskOfPartialFill(trades: AnyTradeType): boolean {
     if (Array.isArray(trades)) {
       return trades.some((trade) => {
-        return SwapRouter.v2TradeWithHighPriceImpact(trade)
+        return SwapRouter.v3TradeWithHighPriceImpact(trade)
       })
     } else {
-      return SwapRouter.v2TradeWithHighPriceImpact(trades)
+      return SwapRouter.v3TradeWithHighPriceImpact(trades)
     }
   }
 
-  private static v2TradeWithHighPriceImpact(
+  private static v3TradeWithHighPriceImpact(
     trade:
       | Trade<Currency, Currency, TradeType>
       | V1Trade<Currency, Currency, TradeType>
-      | V2Trade<Currency, Currency, TradeType>
+      | V3Trade<Currency, Currency, TradeType>
       | MixedRouteTrade<Currency, Currency, TradeType>
   ): boolean {
     return !(trade instanceof V1Trade) && trade.priceImpact.greaterThan(REFUND_ETH_PRICE_IMPACT_THRESHOLD)
