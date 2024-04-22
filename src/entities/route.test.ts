@@ -6,11 +6,11 @@ import { Route as V1RouteSDK, Pair } from '@pollum-io/v1-sdk'
 import { RouteV1 } from './route'
 
 describe('RouteV3', () => {
-  const ETHER = Ether.onChain(1)
-  const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
-  const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
-  const token2 = new Token(1, '0x0000000000000000000000000000000000000003', 18, 't2')
-  const weth = WETH9[1]
+  const ETHER = Ether.onChain(570)
+  const token0 = new Token(570, '0x0000000000000000000000000000000000000001', 18, 't0')
+  const token1 = new Token(570, '0x0000000000000000000000000000000000000002', 18, 't1')
+  const token2 = new Token(570, '0x0000000000000000000000000000000000000003', 18, 't2')
+  const weth = WETH9[570]
 
   const pool_0_1 = new Pool(token0, token1, FeeAmount.MEDIUM, encodeSqrtRatioX96(1, 1), 0, 0, [])
   const pool_0_weth = new Pool(token0, weth, FeeAmount.MEDIUM, encodeSqrtRatioX96(1, 1), 0, 0, [])
@@ -24,7 +24,7 @@ describe('RouteV3', () => {
       expect(route.tokenPath).toEqual([token0, token1])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token1)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
   })
 
@@ -179,10 +179,10 @@ describe('RouteV3', () => {
 })
 
 describe('RouteV1', () => {
-  const ETHER = Ether.onChain(1)
-  const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
-  const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
-  const weth = WETH9[1]
+  const ETHER = Ether.onChain(570)
+  const token0 = new Token(570, '0x0000000000000000000000000000000000000001', 18, 't0')
+  const token1 = new Token(570, '0x0000000000000000000000000000000000000002', 18, 't1')
+  const weth = WETH9[570]
   const pair_0_1 = new Pair(CurrencyAmount.fromRawAmount(token0, '100'), CurrencyAmount.fromRawAmount(token1, '200'))
   const pair_0_weth = new Pair(CurrencyAmount.fromRawAmount(token0, '100'), CurrencyAmount.fromRawAmount(weth, '100'))
   const pair_1_weth = new Pair(CurrencyAmount.fromRawAmount(token1, '175'), CurrencyAmount.fromRawAmount(weth, '100'))
@@ -211,7 +211,7 @@ describe('RouteV1', () => {
     expect(route.path).toEqual([token0, token1])
     expect(route.input).toEqual(token0)
     expect(route.output).toEqual(token1)
-    expect(route.chainId).toEqual(1)
+    expect(route.chainId).toEqual(570)
   })
 
   it('can have a token as both input and output', () => {

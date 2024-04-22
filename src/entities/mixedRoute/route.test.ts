@@ -7,12 +7,12 @@ import { MixedRouteSDK } from './route'
 import { partitionMixedRouteByProtocol } from '../../utils'
 
 describe('MixedRoute', () => {
-  const ETHER = Ether.onChain(1)
-  const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
-  const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
-  const token2 = new Token(1, '0x0000000000000000000000000000000000000003', 18, 't2')
-  const token3 = new Token(1, '0x0000000000000000000000000000000000000004', 18, 't3')
-  const weth = WETH9[1]
+  const ETHER = Ether.onChain(570)
+  const token0 = new Token(570, '0x0000000000000000000000000000000000000001', 18, 't0')
+  const token1 = new Token(570, '0x0000000000000000000000000000000000000002', 18, 't1')
+  const token2 = new Token(570, '0x0000000000000000000000000000000000000003', 18, 't2')
+  const token3 = new Token(570, '0x0000000000000000000000000000000000000004', 18, 't3')
+  const weth = WETH9[570]
 
   const pool_0_1 = new Pool(token0, token1, FeeAmount.MEDIUM, encodeSqrtRatioX96(1, 1), 0, 0, [])
   const pool_0_weth = new Pool(token0, weth, FeeAmount.MEDIUM, encodeSqrtRatioX96(1, 1), 0, 0, [])
@@ -35,7 +35,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token1)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps pure v1 route object and successfully constructs a path from the tokens', () => {
@@ -44,7 +44,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token1)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps mixed route object and successfully constructs a path from the tokens', () => {
@@ -53,7 +53,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1, weth])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(weth)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps complex mixed route object and successfully constructs a path from the tokens', () => {
@@ -62,7 +62,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1, weth, token2])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token2)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps complex mixed route object with multihop V3 in the beginning and constructs a path', () => {
@@ -71,7 +71,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1, weth, token2])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token2)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps complex mixed route object with multihop V1 in the beginning and constructs a path', () => {
@@ -80,7 +80,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1, weth, token2])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token2)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps complex mixed route object with consecutive V3 in the middle and constructs a path', () => {
@@ -89,7 +89,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1, weth, token2, token3])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token3)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
 
     it('wraps complex mixed route object with consecutive V1 in the middle and constructs a path', () => {
@@ -98,7 +98,7 @@ describe('MixedRoute', () => {
       expect(route.path).toEqual([token0, token1, weth, token2, token3])
       expect(route.input).toEqual(token0)
       expect(route.output).toEqual(token3)
-      expect(route.chainId).toEqual(1)
+      expect(route.chainId).toEqual(570)
     })
   })
 
