@@ -1,7 +1,7 @@
 import { Interface } from '@ethersproject/abi'
 import { Percent, Token, validateAndParseAddress } from '@pollum-io/sdk-core'
 import { abi } from '@pollum-io/swap-router-contracts/artifacts/contracts/interfaces/IPeripheryPaymentsWithFeeExtended.sol/IPeripheryPaymentsWithFeeExtended.json'
-import { FeeOptions, Payments, toHex } from '@pollum-io/v2-sdk'
+import { FeeOptions, Payments, toHex } from '@pollum-io/v3-sdk'
 import JSBI from 'jsbi'
 
 function encodeFeeBips(fee: Percent): string {

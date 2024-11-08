@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant'
 
 import { Currency, Price, Token } from '@pollum-io/sdk-core'
-import { Pool } from '@pollum-io/v2-sdk'
+import { Pool } from '@pollum-io/v3-sdk'
 import { Pair } from '@pollum-io/v1-sdk'
 
 type TPool = Pair | Pool

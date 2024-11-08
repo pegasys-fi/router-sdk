@@ -8,10 +8,10 @@ import {
   NonfungiblePositionManager,
   Position,
   toHex,
-} from '@pollum-io/v2-sdk'
+} from '@pollum-io/v3-sdk'
 import JSBI from 'jsbi'
 
-// condensed version of v2-sdk AddLiquidityOptions containing only necessary swap + add attributes
+// condensed version of v3-sdk AddLiquidityOptions containing only necessary swap + add attributes
 export type CondensedAddLiquidityOptions = Omit<MintSpecificOptions, 'createPool'> | IncreaseSpecificOptions
 
 export enum ApprovalTypes {
