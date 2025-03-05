@@ -1546,10 +1546,10 @@
   dependencies:
     web3 "^1.7.3"
 
-"@pollum-io/sdk-core@0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@pollum-io/sdk-core/-/sdk-core-0.0.3.tgz#407e2b958ad56da3244c6022552025e37ae3f631"
-  integrity sha512-kL6eIpvcMyR2eRXliAYoKE9f1u5vfU+IwQeESaMcKdRB5KKZ8J+hmC7BSEsU/wvcMKHJ5AQSBWAElvzy2J/8Ig==
+"@pollum-io/sdk-core@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@pollum-io/sdk-core/-/sdk-core-0.0.4.tgz#c448d58b53bd2b274c38d903a932d62400680b1d"
+  integrity sha512-Lf6FYnXYzafJOuLASLn8D/cEccJRePxhP0E98VvjaKWMi/4AmoFz25+86T7255kLvZQm+PgOcbEbeQ/o13vmwQ==
   dependencies:
     "@ethersproject/address" "^5.0.2"
     big.js "^5.2.2"
@@ -1570,14 +1570,14 @@
     dotenv "^14.2.0"
     hardhat-watcher "^2.1.1"
 
-"@pollum-io/v1-sdk@0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@pollum-io/v1-sdk/-/v1-sdk-0.0.8.tgz#b2bf768cdfb7d3f385499da4e7229cc36f31293e"
-  integrity sha512-AYDz/teIT3MpC4NZAOACiW87GN+nFlquIQ3a4hu6TRaaP+vEQnXRgJagYMmHQu3cuCrkYv8/alTejVBI8cQMzQ==
+"@pollum-io/v1-sdk@0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@pollum-io/v1-sdk/-/v1-sdk-0.0.12.tgz#35db756c7c654316079f4c7df53d2866a0d0fe6d"
+  integrity sha512-mB1IIi5vZ9AZ0xEb5XlfmttAA9g5ibUuGe+nNETcJLMuCmABZmIpHKPOUcG9UNhovDaoch7/jkMlCDrXfb3imA==
   dependencies:
     "@ethersproject/address" "^5.0.0"
     "@ethersproject/solidity" "^5.0.0"
-    "@pollum-io/sdk-core" "0.0.3"
+    "@pollum-io/sdk-core" "0.0.4"
     tiny-invariant "^1.1.0"
     tiny-warning "^1.0.3"
 
@@ -1599,14 +1599,14 @@
     "@uniswap/lib" "^4.0.1-alpha"
     base64-sol "1.0.1"
 
-"@pollum-io/v3-sdk@0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@pollum-io/v3-sdk/-/v3-sdk-0.0.2.tgz#1c2acded9de3471561fd4a6ff0e644198871cf68"
-  integrity sha512-4Skgxd8aJKaUAnk9jo1leiARkOMGQu1PvpyJBhC6tCM52zT9t7/wO+6tlxv4zLHmvXAi0qeraGjJ85WMJC+HuA==
+"@pollum-io/v3-sdk@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@pollum-io/v3-sdk/-/v3-sdk-0.0.3.tgz#9be99e17b4bb4e66ea601104c0a3fc1610169b04"
+  integrity sha512-d2Zd6/F+vt/vTL/0LKIQHF8VJWgtqMPiCngoAJuazRtsO/DWR0HwAdpc6OMskQ88Wmu5YrfnEogf5n6ex72N3w==
   dependencies:
     "@ethersproject/abi" "^5.0.12"
     "@ethersproject/solidity" "^5.0.9"
-    "@pollum-io/sdk-core" "0.0.3"
+    "@pollum-io/sdk-core" "0.0.4"
     "@pollum-io/swap-router-contracts" "0.0.5"
     "@pollum-io/v3-periphery" "0.0.1"
     "@pollum-io/v3-staker" "0.0.1"
