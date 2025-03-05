@@ -1599,10 +1599,10 @@
     "@uniswap/lib" "^4.0.1-alpha"
     base64-sol "1.0.1"
 
-"@pollum-io/v3-sdk@0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@pollum-io/v3-sdk/-/v3-sdk-0.0.3.tgz#9be99e17b4bb4e66ea601104c0a3fc1610169b04"
-  integrity sha512-d2Zd6/F+vt/vTL/0LKIQHF8VJWgtqMPiCngoAJuazRtsO/DWR0HwAdpc6OMskQ88Wmu5YrfnEogf5n6ex72N3w==
+"@pollum-io/v3-sdk@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@pollum-io/v3-sdk/-/v3-sdk-0.0.4.tgz#f757bf801ad63c3a792346882772aeed370c6351"
+  integrity sha512-6sD5QTQ7WvcOnnn8hcieFkKW96T7ZWwOp+5dKOhvLvQDqPhq727h+pZuWOmgHH3bvvAGOo9HwWvwavqImNi0Vw==
   dependencies:
     "@ethersproject/abi" "^5.0.12"
     "@ethersproject/solidity" "^5.0.9"
